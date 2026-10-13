@@ -1,0 +1,26 @@
+{
+  "name": "lumina-garden",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Assignment 3: a seeded, staged-growth bioluminescent garden in Three.js.",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --import tsx --test tests/generator.test.ts",
+    "test:browser": "playwright test",
+    "record:demo": "node scripts/record-demo.mjs",
+    "report": "python3 scripts/create-report.py"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2",
+    "@types/three": "0.180.0",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vite": "7.1.7"
+  }
+}
