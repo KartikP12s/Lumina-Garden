@@ -3,18 +3,20 @@
 - **Local playable build:** implemented and production-built. See README
   for strict run instructions.
 - **Report:** `docs/Assignment-3-Report.pdf` (two pages).
-- **Screen recording:** `artifacts/LuminaGarden-Assignment3-Demo.webm`.
+- **Submission video:** To be recorded and uploaded by the project team.
+  - The previously generated local recording is optional reference material,
+    not the team's final submission video.
 - **Performance evidence:** `docs/benchmark-results.json`.
 - **Source remote:** https://github.com/KartikP12s/Lumina-Garden
   - Public visibility verified through GitHub's repository API on October 12,
-    2026. Local implementation changes still need to be pushed.
-- **Live playable URL:** PENDING deployment and verification.
-  - Expected GitHub Pages target: https://kartikp12s.github.io/Lumina-Garden/
-  - The target address is not a verified live deployment. GitHub's API reports
-    `has_pages: false` for this repository.
-- **YouTube/Vimeo URL:** PENDING upload of the generated recording.
+    2026. The implementation is committed on `main`.
+- **Live playable URL (Vercel):** https://lumina-garden-zeta.vercel.app/
+- **README / build instructions:** https://github.com/KartikP12s/Lumina-Garden/blob/main/README.md
+- **YouTube/Vimeo URL:** TO BE ADDED after the team records and uploads its video.
 
-Before submitting, push the implementation, enable Pages, fill in the two
-pending hosted links, and regenerate the report so all three links are present.
+Before submitting, add the YouTube/Vimeo URL to
+`docs/Assignment-3-Report.md` and this file, then run `npm run report` to
+regenerate the two-page PDF. The video should run 2-3 minutes and include
+real-time visual proof, explanation, and the one/three/five-plant stress test.
 Check Assignment 2 approval separately: the supplied PDF has an approval
 heading but its extracted content does not contain mentor approval evidence.
