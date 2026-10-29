@@ -49,6 +49,6 @@ Kartik: procedural geometry, wind shaders, and profiling. Safa: UI/environment c
 
 Playable project: https://lumina-garden-zeta.vercel.app/
 
-Alpha built and tested locally; production deployment pending verification.
+Production alpha verified: menu, planting, wind, day/night, maturation, completion, and clean restart. No browser/shader errors observed.
 
 Source / README: https://github.com/KartikP12s/Lumina-Garden

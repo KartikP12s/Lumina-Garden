@@ -1,5 +1,18 @@
 {
   "url": "https://lumina-garden-zeta.vercel.app/",
-  "verified_alpha": false,
-  "status": "Alpha built and tested locally; production deployment pending verification."
+  "verified_alpha": true,
+  "version": "0.2.0-alpha",
+  "source_commit": "a2f8579",
+  "verified_at": "2026-10-29T16:18:31.046Z",
+  "status": "Production alpha verified: menu, planting, wind, day/night, maturation, completion, and clean restart. No browser/shader errors observed.",
+  "checks": [
+    "start menu",
+    "active planting",
+    "wind slider",
+    "day/night slider",
+    "growth completion",
+    "end-state summary",
+    "restart to empty garden"
+  ],
+  "browser_errors": []
 }
