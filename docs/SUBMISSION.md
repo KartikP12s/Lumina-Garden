@@ -1,4 +1,29 @@
-# Submission links and completion status
+# Assignment 4 - Alpha submission
+
+- **Playable project:** https://lumina-garden-zeta.vercel.app/
+  - Alpha deployment verification is recorded in `docs/alpha/deployment.json`.
+- **Two-page report:** [Assignment-4-Report.pdf](Assignment-4-Report.pdf).
+- **Four-slide presentation:** [PowerPoint](LuminaGarden-Assignment-4-Presentation.pptx)
+  and [PDF](LuminaGarden-Assignment-4-Presentation.pdf).
+- **Speaker notes:** [Assignment-4-Presentation-Notes.md](Assignment-4-Presentation-Notes.md),
+  split between Kartik and Safa; target 4:30, maximum 5 minutes.
+- **Weekly schedule source:** `docs/alpha/production-plan.json`.
+  - Tentative submission: December 14, 2026.
+  - Feature freeze: December 6. Buffer: December 7–13, exclusively fixes,
+    documentation, and polish; no new features.
+- **Release notes / known issues:** `docs/alpha/release-notes.json`.
+- **Measured alpha evidence:** `docs/alpha/benchmark-results.json` and
+  `docs/alpha/evidence/`. Assignment 3 measurements are retained separately.
+- **Source / README:** https://github.com/KartikP12s/Lumina-Garden
+
+Regenerate the alpha report and slides with the instructions in README.
+The assignment's report limit is two pages and the mid-crit deck limit is
+four slides. A video link is not listed as an Assignment 4 requirement in
+the supplied brief; the Assignment 3 video status below is retained separately.
+
+---
+
+# Assignment 3 historical submission status
 
 - **Local playable build:** implemented and production-built. See README
   for strict run instructions.

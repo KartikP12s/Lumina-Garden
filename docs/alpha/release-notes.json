@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0-alpha",
+  "date": "October 29, 2026",
+  "new_features": [
+    "Complete loop: Start Garden menu → empty active garden → completion summary → restart/menu. Finishing requires at least one plant and no unfinished growth.",
+    "Wind slider drives a shared plant-space shader bend after instance placement; stems, leaves, petals, and flower centers move coherently during and after growth.",
+    "Day/night slider changes background, fog, and scene lighting. Emission and bloom soften in daylight to preserve plant readability.",
+    "Menu/resume pauses the experience clock. Restart restores defaults and releases old plants, lights, materials, and instance buffers.",
+    "HUD shows plant count, growth stage, seed hash, height, and branch/leaf counts. The five-plant limit remains enforced across manual planting and diagnostics.",
+    "Benchmark exports alpha version, wind/daylight, effective bloom strength, browser/GPU, viewport, frame times, draw calls, and triangles. Vercel configuration and CI checks are included."
+  ],
+  "bug_fixes": [
+    "Camera drags that return to their starting point no longer count as planting clicks; pointer cancellation clears pending placement.",
+    "Corrected daytime glow washout by attenuating emission and bloom as daylight increases.",
+    "Guarded empty/unfinished completion and blocked conflicting controls during diagnostics. WebGL2 errors remain visible in the start menu."
+  ],
+  "known_issues": [
+    "Wind is an analytic height-based deformation, not botanical physics: it does not preserve exact branch lengths or simulate inertia/collisions. Nearby foliage can overlap.",
+    "Gardens are session-only; refresh resets them. Desktop WebGL2 is required; mobile/touch is outside the approved scope.",
+    "Movable-light bending, additional species, and shadows remain scheduled work. Only the current five-plant workload is validated, not the original 15–20-plant target.",
+    "Results are from Chrome on one Apple M2 GPU. Cross-browser/GPU coverage and shader-startup/performance headroom need further testing."
+  ]
+}

@@ -15,6 +15,13 @@ button, input { border-radius: 6px; }
 .brand-light { font-weight: 400; color: #b7c5b5; }
 .brand small { display: block; font-family: 'DM Sans', sans-serif; font-size: 8px; letter-spacing: 2px; font-weight: 500; color: #81937f; margin-top: 5px; }
 .project-tag { display: flex; align-items: center; gap: 10px; font-size: 9px; letter-spacing: 1.7px; color: #95a08f; }
+.header-actions { display: flex; align-items: center; gap: 25px; }
+.garden-actions { display: flex; align-items: center; gap: 18px; }
+.garden-actions .secondary-button { font-size: 10px; padding: 7px 11px; }
+.environment-section { border-top: 1px solid var(--line); margin-top: 22px; padding-top: 20px; }
+.environment-section .slider-label { margin-top: 12px; }
+.environment-section .section-label { margin-bottom: 12px; }
+.range-ends { display: flex; justify-content: space-between; font-size: 8px; color: #70836a; margin-top: 7px; }
 .divider { color: #435045; margin: 0 7px; }
 .status-dot { width: 5px; height: 5px; background: #b7dba3; border-radius: 50%; display: inline-block; box-shadow: 0 0 8px #b7dba330; flex-shrink: 0; }
 .quiet-button { border: 0; background: transparent; color: #a5b29e; padding: 7px 0; font-size: 11px; }
@@ -137,6 +144,24 @@ dialog::backdrop { background: #000b; backdrop-filter: blur(5px); }
 dialog h2 { font-size: 30px; margin-bottom: 22px; }
 dialog p { font-size: 13px; line-height: 1.85; }
 dialog strong { color: #d8e9ce; font-weight: 500; }
+.game-dialog { width: min(490px, calc(100% - 28px)); max-width: 490px; padding: 32px 38px; }
+.game-dialog::backdrop { background: #020a06b8; backdrop-filter: blur(8px); }
+.game-dialog h2 { font-size: 31px; line-height: 1.28; margin: 7px 0 15px; }
+.game-dialog h2 em { font-family: Georgia, serif; font-weight: 400; color: #bedca9; }
+.game-dialog > p { margin: 10px 0 20px; font-size: 12px; line-height: 1.75; }
+.menu-icon svg { width: 50px; height: 50px; margin: 18px 0 5px; color: #c2e1ad; }
+.menu-steps { list-style: none; counter-reset: steps; padding: 0; margin: 20px 0; }
+.menu-steps li { counter-increment: steps; position: relative; padding: 8px 0 9px 36px; border-top: 1px solid #2c4027; }
+.menu-steps li::before { content: '0' counter(steps); position: absolute; left: 0; top: 10px; font-size: 10px; color: #809c6c; }
+.menu-steps strong { display: block; font-size: 12px; font-weight: 500; }
+.menu-steps span { display: block; color: #8da07e; font-size: 10px; margin-top: 4px; }
+.game-dialog .menu-controls { font-size: 9px; color: #8fa580; margin-bottom: 14px; }
+.game-dialog > .quiet-button { display: block; margin: 10px auto 0; }
+.game-dialog > small { display: block; text-align: center; margin-top: 20px; color: #7d9470; font-size: 8px; line-height: 1.7; }
+#garden-summary > p { font-size: 12px; line-height: 1.8; }
+#garden-summary dl { font-size: 12px; margin: 24px 0; }
+#garden-summary .summary-seeds { font-size: 9px; color: #829875; overflow-wrap: anywhere; border-top: 1px solid #2c4027; padding-top: 14px; }
+#start-error { color: #f0c0a8; }
 .dialog-close { position: absolute; top: 10px; right: 16px; background: transparent; border: 0; color: #9eb991; font-size: 24px; }
 @media (min-width: 1500px) { main { grid-template-columns: 320px minmax(0, 1fr); } .sidebar { padding: 40px 32px 24px; } .garden-panel { padding: 36px 40px 0; } }
 @media (max-width: 1180px) { .plant-list { grid-template-columns: repeat(3, 1fr); } .plant-card { min-height: 64px; } .plant-card-progress { margin-top: 0; } .plant-number { display: none; } .garden-panel { padding: 26px 22px 0; } }

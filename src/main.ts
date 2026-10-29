@@ -6,14 +6,16 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { GrowingPlant } from './plant';
 import { GARDEN_POSITIONS, GROWTH_SECONDS, MAX_PLANTS, growthStage, hashSeed } from './generator';
+import { environmentAt } from './environment';
+import { canFinish, type SessionPhase } from './session';
 import './style.css';
 
 const leafIcon = `<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M16 27V14M16 21C6 21 6 10 6 10c10 0 10 11 10 11Zm0-6C16 5 26 5 26 5c0 10-10 10-10 10Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
   <header class="topbar">
     <a class="brand" href="./" aria-label="LuminaGarden home">${leafIcon}<span>Lumina<span class="brand-light">Garden</span><small>A LITTLE LIGHT. A LITTLE LIFE.</small></span></a>
-    <div class="project-tag"><span class="status-dot"></span> INTERACTIVE GRAPHICS LAB <span class="divider">/</span> PROTOTYPE 03</div>
-    <button id="help" class="quiet-button">How to grow <span>↗</span></button>
+    <div class="project-tag"><span class="status-dot"></span> INTERACTIVE GRAPHICS LAB <span class="divider">/</span> ALPHA 04</div>
+    <div class="header-actions"><button id="menu" class="quiet-button">Menu</button><button id="help" class="quiet-button">How to grow <span>↗</span></button></div>
   </header>
   <main>
     <aside class="sidebar">
@@ -24,7 +26,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <div class="section-label"><span>01 — PLANT A SEED</span><span class="tiny-leaf">✳</span></div>
         <div class="species-card">${leafIcon}<div><strong>Lumina bloom</strong><small>Procedural plant · one shared rule set</small></div><span class="species-dot"></span></div>
         <label for="seed">Seed <span>Same seed, same plant.</span></label>
-        <input id="seed" type="text" value="2029" maxlength="64" autocomplete="off" spellcheck="false" />
+        <input id="seed" type="text" value="2026" maxlength="64" autocomplete="off" spellcheck="false" />
         <button id="plant" class="primary-button"><span>＋</span> Plant a seed <span class="shortcut">P</span></button>
         <p class="control-note">Or click an open spot in the garden.</p>
       </section>
@@ -35,14 +37,23 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <label class="slider-label" for="glow">Bloom intensity <output id="glow-value">0.65</output></label>
         <input id="glow" type="range" min="0" max="1.5" step="0.05" value="0.65" />
       </section>
+      <section class="environment-section" aria-label="Environment controls">
+        <div class="section-label"><span>03 — SHAPE THE ATMOSPHERE</span></div>
+        <label class="slider-label" for="wind">Wind strength <output id="wind-value">35%</output></label>
+        <input id="wind" type="range" min="0" max="1" step="0.05" value="0.35" />
+        <div class="range-ends"><span>Still</span><span>Breezy</span></div>
+        <label class="slider-label" for="daylight">Time of day <output id="daylight-value">Dusk</output></label>
+        <input id="daylight" type="range" min="0" max="1" step="0.05" value="0.15" />
+        <div class="range-ends"><span>Night</span><span>Day</span></div>
+      </section>
       <section class="specimen-section" aria-label="Selected plant">
-        <div class="section-label"><span>03 — UNDER THE SURFACE</span></div>
+        <div class="section-label"><span>04 — UNDER THE SURFACE</span></div>
         <div id="specimen" class="specimen"></div>
       </section>
       <div class="sidebar-bottom"><span>BUILT FROM RULES, ROOTED IN LIGHT.</span><small>Kartik Patel & Safa Akbar</small></div>
     </aside>
     <section class="garden-panel" aria-label="Interactive 3D garden">
-      <div class="garden-heading"><div><span class="eyebrow">THE GARDEN</span><h2>A quiet place to begin.</h2></div><div class="live-pill"><span class="status-dot"></span> LIVE SCENE</div></div>
+      <div class="garden-heading"><div><span class="eyebrow">THE GARDEN</span><h2 id="session-status">A quiet place to begin.</h2></div><div class="live-pill"><span class="status-dot"></span> LIVE SCENE</div></div>
       <div id="viewport" tabindex="0" role="application" aria-label="3D garden. Click the ground or press P to plant. Drag to orbit; scroll to zoom.">
         <div id="loading">Preparing the garden…</div>
         <div class="scene-caption"><span class="scene-cross">＋</span><span>SEED → SPROUT → STEM → BRANCHES → LEAVES</span></div>
@@ -51,10 +62,10 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
         <div class="viewport-tools"><span><i class="mouse-icon"></i> Click to plant</span><span>Drag to explore</span><span>Scroll to zoom</span><button id="camera-home" class="quiet-button" title="Return camera to the initial view">↺ View</button></div>
         <div id="demo-overlay" class="demo-overlay" hidden><span id="demo-chapter"></span><h3 id="demo-title"></h3><p id="demo-text"></p><div class="demo-progress"><i id="demo-progress"></i></div></div>
       </div>
-      <div class="garden-strip"><div><span class="status-dot"></span><strong id="plant-count">3 / 5</strong><span>plants in your garden</span></div><button id="clear" class="quiet-button">Clear garden <span>↺</span></button></div>
+      <div class="garden-strip"><div><span class="status-dot"></span><strong id="plant-count">0 / 5</strong><span>plants in your garden</span></div><div class="garden-actions"><button id="finish" class="secondary-button" disabled>Finish garden ↗</button><button id="clear" class="quiet-button">Clear garden <span>↺</span></button></div></div>
       <div class="plant-list" id="plant-list" aria-label="Plants in this garden"></div>
       <details class="lab" id="lab"><summary><span>↗ &nbsp; Performance lab</span><span class="lab-metrics"><b id="fps">—</b> FPS <span>·</span> <b id="draw-calls">—</b> DRAW CALLS</span></summary><div class="lab-body">
-        <p>Measure 1 → 3 → 5 plants with bloom and one light per plant. Ten seconds of growth and warm-up, then eight seconds of measured frames per level. The garden stays at five plants or fewer.</p>
+        <p>Measure 1 → 3 → 5 plants with bloom, one light per plant, and your current wind/daylight settings. Ten seconds of growth and warm-up, then eight seconds of measured frames per level. This replaces the current garden; the maximum stays at five.</p>
         <div class="lab-actions"><button id="benchmark" class="secondary-button">Run stress test</button><button id="download" class="quiet-button" disabled>Export results ↓</button><button id="tour" class="quiet-button">150-second guided demo ↗</button><button id="stop" class="quiet-button" hidden>Stop demo / test</button></div>
         <p id="benchmark-status" role="status">Target: 60 FPS. Measurements depend on your browser, GPU, and viewport.</p>
         <div id="benchmark-results"></div>
@@ -62,7 +73,27 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <footer class="garden-footer"><span>PROCEDURAL GEOMETRY <i>·</i> STAGED GROWTH <i>·</i> EMISSIVE LIGHT</span><span>THREE.JS / WEBGL2</span></footer>
     </section>
   </main>
-  <dialog id="help-dialog"><button id="close-help" class="dialog-close" aria-label="Close help">×</button><div class="eyebrow">A SMALL FIELD GUIDE</div><h2>Give a seed<br>a place to grow.</h2><p>Click an open spot on the soil, or use <strong>Plant a seed</strong>. Nine seconds later, a sprout becomes a stem, branches unfold, and leaves and petals emerge.</p><p>Each seed sets its height, branching, leaves, and color. Reuse a seed to reproduce its geometry. This garden holds up to <strong>five plants</strong>.</p><p>Drag to orbit. Scroll to zoom. Switch bloom and plant lights off and on to see the rendering layers. The performance lab measures the same scene at one, three, and five plants.</p><button id="help-done" class="primary-button">Back to the garden ↗</button></dialog>
+  <dialog id="session-menu" class="game-dialog" aria-labelledby="menu-title">
+    <div class="eyebrow">LUMINA GARDEN / ALPHA 04</div>
+    <div class="menu-icon">${leafIcon}</div>
+    <h2 id="menu-title">A little light.<br><em>A garden of your own.</em></h2>
+    <p>Plant a seed. Watch it grow. Shape the breeze and the light, then finish a garden that feels like yours.</p>
+    <ol class="menu-steps"><li><strong>Plant</strong><span>Click the soil. Up to five plants.</span></li><li><strong>Shape</strong><span>Adjust wind and time of day.</span></li><li><strong>Finish</strong><span>Let your plants mature, then finish or start again.</span></li></ol>
+    <p class="menu-controls">Drag to orbit · Scroll to zoom · P to plant</p>
+    <p id="start-error" role="alert" hidden></p>
+    <button id="start-garden" class="primary-button" disabled>Preparing the garden…</button>
+    <button id="resume-garden" class="quiet-button" hidden>Return to your garden ↗</button>
+    <small>Kartik Patel & Safa Akbar · Procedural generation / Animation / Rendering</small>
+  </dialog>
+  <dialog id="complete-dialog" class="game-dialog" aria-labelledby="complete-title">
+    <div class="eyebrow">A LITTLE WORLD, MADE BY YOU</div>
+    <div class="menu-icon">${leafIcon}</div>
+    <h2 id="complete-title">Your garden<br><em>is in full bloom.</em></h2>
+    <div id="garden-summary"></div>
+    <button id="restart-garden" class="primary-button">Grow another garden ↗</button>
+    <button id="complete-menu" class="quiet-button">Return to menu</button>
+  </dialog>
+  <dialog id="help-dialog"><button id="close-help" class="dialog-close" aria-label="Close help">×</button><div class="eyebrow">A SMALL FIELD GUIDE</div><h2>Give a seed<br>a place to grow.</h2><p>Click the soil or use <strong>Plant a seed</strong>. Over nine seconds, stems, branches, leaves, and petals emerge. The same seed always makes the same geometry. A garden holds <strong>five plants</strong>.</p><p>Adjust wind to see connected swaying, and time of day to change the atmosphere. Drag to orbit and scroll to zoom. Bloom and Plant lights reveal separate rendering layers.</p><p>When every planted seed has matured, use <strong>Finish garden</strong> to see your summary. Grow another garden to start fresh. The performance lab measures one, three, and five plants and replaces the current layout.</p><button id="help-done" class="primary-button">Back to the garden ↗</button></dialog>
 `;
 
 const el = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -71,9 +102,15 @@ const seedInput = el<HTMLInputElement>('seed');
 const bloomInput = el<HTMLInputElement>('bloom');
 const lightsInput = el<HTMLInputElement>('lights');
 const plantButton = el<HTMLButtonElement>('plant');
+const windInput = el<HTMLInputElement>('wind');
+const daylightInput = el<HTMLInputElement>('daylight');
+const menuDialog = el<HTMLDialogElement>('session-menu');
+const completeDialog = el<HTMLDialogElement>('complete-dialog');
+for (const dialog of [menuDialog, completeDialog]) dialog.addEventListener('cancel', e => e.preventDefault());
+menuDialog.showModal();
 
 interface BenchmarkRow { plants: number; averageFps: number; p95FrameMs: number; minFps: number; drawCalls: number; triangles: number; frames: number; measuredSeconds: number }
-interface BenchmarkReport { capturedAt: string; userAgent: string; gpu: string; viewport: { width: number; height: number }; pixelRatio: number; bloom: boolean; lightsPerPlant: number; growthSeconds: number; targetFps: number; sampleSeconds: number; warmupSeconds: number; results: BenchmarkRow[] }
+interface BenchmarkReport { version: string; capturedAt: string; userAgent: string; gpu: string; viewport: { width: number; height: number }; pixelRatio: number; bloom: boolean; bloomControl: number; effectiveBloomStrength: number; lightsPerPlant: number; windStrength: number; daylight: number; growthSeconds: number; targetFps: number; sampleSeconds: number; warmupSeconds: number; results: BenchmarkRow[] }
 
 async function startGarden() {
   const canvas = document.createElement('canvas');
@@ -98,9 +135,22 @@ async function startGarden() {
   controls.enablePan = false;
   home();
   el('camera-home').onclick = home;
-  scene.add(new THREE.HemisphereLight('#9dced0', '#25372d', 1.6));
+  const hemisphere = new THREE.HemisphereLight('#9dced0', '#25372d', 1.6);
+  scene.add(hemisphere);
   const ambient = new THREE.DirectionalLight('#d1e1df', 2.0);
   ambient.position.set(-4, 8, 4); scene.add(ambient);
+  const applyEnvironment = () => {
+    const env = environmentAt(Number(daylightInput.value));
+    (scene.background as THREE.Color).set('#0b1718').lerp(new THREE.Color('#a2b8b9'), env.day);
+    const fog = scene.fog as THREE.FogExp2;
+    fog.color.copy(scene.background as THREE.Color); fog.density = env.fog;
+    hemisphere.intensity = env.hemisphere; ambient.intensity = env.sun;
+    hemisphere.color.set('#9dced0').lerp(new THREE.Color('#eef5da'), env.day);
+    el('wind-value').textContent = `${Math.round(Number(windInput.value) * 100)}%`;
+    el('daylight-value').textContent = env.day < 0.1 ? 'Night' : env.day > 0.7 ? 'Day' : 'Dusk';
+  };
+  windInput.oninput = daylightInput.oninput = applyEnvironment;
+  applyEnvironment();
 
   const soilMaterial = new THREE.MeshStandardMaterial({ color: '#b8c9b9', roughness: 1 });
   // AI texture is optional to initialization: its provenance is documented with the asset.
@@ -143,6 +193,7 @@ async function startGarden() {
   };
   new ResizeObserver(resize).observe(viewport); resize();
   const plants: GrowingPlant[] = [];
+  let phase: SessionPhase = 'menu', hasSession = false;
   let selected: GrowingPlant | undefined;
   let elapsed = 0, lastTime = performance.now(), lastUi = 0;
   let recentFrames: number[] = [], lastCalls = 0, lastTriangles = 0;
@@ -157,7 +208,11 @@ async function startGarden() {
   };
   const updateUi = () => {
     const full = plants.length >= MAX_PLANTS;
-    plantButton.disabled = full || busy;
+    plantButton.disabled = full || busy || phase !== 'active';
+    for (const id of ['benchmark', 'tour', 'clear', 'bloom', 'lights', 'glow', 'seed', 'wind', 'daylight']) el<HTMLInputElement>(id).disabled = busy || phase !== 'active';
+    el<HTMLButtonElement>('menu').disabled = busy || phase !== 'active';
+    el<HTMLButtonElement>('finish').disabled = busy || phase !== 'active' || !canFinish(plants.map(p => p.progress));
+    el('session-status').textContent = !plants.length ? 'A quiet place to begin.' : plants.some(p => p.progress < 1) ? 'A little more life, unfolding.' : 'Your garden is in bloom.';
     el('plant-count').textContent = `${plants.length} / ${MAX_PLANTS}`;
     el('plant-list').innerHTML = plants.length ? plants.map((plant, i) => `<button class="plant-card ${selected === plant ? 'selected' : ''}" data-index="${i}" aria-label="Inspect plant ${i + 1}" aria-pressed="${selected === plant}"><span class="plant-number">0${i + 1}</span><span class="plant-color" style="--plant-color:hsl(${plant.blueprint.hue * 360} 60% 65%)">${leafIcon}</span><span><strong>Lumina ${String(i + 1).padStart(2, '0')}</strong><small>${growthStage(plant.progress)}</small></span><span class="plant-card-progress">${Math.round(plant.progress * 100)}<small>%</small></span></button>`).join('') : '<p class="empty-garden">An open patch of possibility. Plant your first seed.</p>';
     if (selected) {
@@ -184,7 +239,7 @@ async function startGarden() {
     if (Number.isSafeInteger(n) && n >= 0 && n < Number.MAX_SAFE_INTEGER) seedInput.value = String(n + 1);
   };
   const plantNext = () => {
-    if (busy) return;
+    if (busy || phase !== 'active') return;
     const seed = seedInput.value.trim();
     if (!seed) { notify('Enter a seed first. A number or a word works.'); seedInput.focus(); return; }
     const pos = GARDEN_POSITIONS.map(p => new THREE.Vector3(...p)).find(isOpen);
@@ -194,7 +249,34 @@ async function startGarden() {
   plantButton.onclick = plantNext;
   viewport.onkeydown = e => { if (e.key.toLowerCase() === 'p') { e.preventDefault(); plantNext(); } };
   const clearGarden = () => { plants.forEach(p => p.dispose()); plants.length = 0; selected = undefined; updateUi(); };
-  el('clear').onclick = () => { if (!busy) { clearGarden(); notify('A fresh start. Plant a new possibility.'); } };
+  el('clear').onclick = () => { if (!busy && phase === 'active') { clearGarden(); notify('A fresh start. Plant a new possibility.'); } };
+  const startSession = () => {
+    if (busy) return;
+    clearGarden(); phase = 'active'; hasSession = true;
+    seedInput.value = '2026'; windInput.value = '0.35'; daylightInput.value = '0.15';
+    bloomInput.checked = true; bloom.enabled = true; lightsInput.checked = true; bloom.strength = 0.65;
+    el<HTMLInputElement>('glow').value = '0.65'; el('glow-value').textContent = '0.65';
+    clearTimeout(noticeTimer); el('notice').classList.remove('visible');
+    el<HTMLDetailsElement>('lab').open = false;
+    menuDialog.close(); completeDialog.close();
+    applyEnvironment(); home(); lastTime = performance.now(); updateUi(); viewport.focus();
+  };
+  el('start-garden').onclick = el('restart-garden').onclick = startSession;
+  const showMenu = () => {
+    if (busy) return;
+    const canResume = phase === 'active' && hasSession;
+    completeDialog.close(); phase = 'menu'; updateUi();
+    el('resume-garden').hidden = !canResume;
+    menuDialog.showModal();
+  };
+  el('menu').onclick = el('complete-menu').onclick = showMenu;
+  el('resume-garden').onclick = () => { phase = 'active'; menuDialog.close(); lastTime = performance.now(); updateUi(); viewport.focus(); };
+  el('finish').onclick = () => {
+    if (busy || phase !== 'active' || !canFinish(plants.map(p => p.progress))) return;
+    phase = 'complete'; cursor.visible = false; el('tooltip').hidden = true; updateUi();
+    el('garden-summary').innerHTML = `<p>${plants.length} ${plants.length === 1 ? 'plant' : 'plants'}, fully grown. A small world shaped by your choices.</p><dl><div><dt>Branches / leaves</dt><dd>${plants.reduce((n, p) => n + p.blueprint.branchCount, 0)} / ${plants.reduce((n, p) => n + p.blueprint.leaves.length, 0)}</dd></div><div><dt>Atmosphere</dt><dd>${el('daylight-value').textContent} · ${el('wind-value').textContent} wind</dd></div></dl><p class="summary-seeds">Seed hashes: ${plants.map(p => p.blueprint.seed).join(' · ')}</p>`;
+    completeDialog.showModal();
+  };
   bloomInput.onchange = () => { bloom.enabled = bloomInput.checked; };
   el<HTMLInputElement>('glow').oninput = e => { bloom.strength = Number((e.target as HTMLInputElement).value); el('glow-value').textContent = bloom.strength.toFixed(2); };
 
@@ -205,18 +287,19 @@ async function startGarden() {
     const hit = raycaster.intersectObject(ground)[0];
     return hit ? new THREE.Vector3(hit.point.x, 0, hit.point.z) : null;
   };
-  let down: { x: number; y: number } | null = null;
-  canvas.addEventListener('pointerdown', e => { if (e.button === 0) down = { x: e.clientX, y: e.clientY }; });
+  let down: { x: number; y: number; dragged: boolean } | null = null;
+  canvas.addEventListener('pointerdown', e => { if (e.button === 0) down = { x: e.clientX, y: e.clientY, dragged: false }; });
   canvas.addEventListener('pointerup', e => {
-    if (!down || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5 || e.button !== 0) { down = null; return; }
+    if (!down || down.dragged || Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5 || e.button !== 0) { down = null; return; }
     down = null;
-    if (busy) return;
+    if (busy || phase !== 'active') return;
     const p = groundPoint(e), seed = seedInput.value.trim();
     if (!seed) { notify('Enter a seed before planting.'); return; }
     if (p && addPlant(p, seed)) { advanceSeed(); notify('Seed planted. Sprout → stem → branches → leaves.'); }
   });
   canvas.addEventListener('pointermove', e => {
-    const p = groundPoint(e), valid = p && isOpen(p) && plants.length < MAX_PLANTS && !busy;
+    if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) down.dragged = true;
+    const p = groundPoint(e), valid = p && isOpen(p) && plants.length < MAX_PLANTS && !busy && phase === 'active';
     cursor.visible = Boolean(valid);
     el('tooltip').hidden = !valid;
     canvas.style.cursor = valid ? 'crosshair' : 'grab';
@@ -228,6 +311,7 @@ async function startGarden() {
     }
   });
   canvas.addEventListener('pointerleave', () => { cursor.visible = false; el('tooltip').hidden = true; down = null; });
+  canvas.addEventListener('pointercancel', () => { down = null; cursor.visible = false; el('tooltip').hidden = true; });
 
   const wait = (ms: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
     const abort = () => { clearTimeout(timer); reject(new DOMException('Cancelled', 'AbortError')); };
@@ -236,8 +320,7 @@ async function startGarden() {
   });
   const setBusy = (value: boolean) => {
     busy = value;
-    for (const id of ['benchmark', 'tour', 'clear']) el<HTMLButtonElement>(id).disabled = value;
-    for (const id of ['bloom', 'lights', 'glow', 'seed']) el<HTMLInputElement>(id).disabled = value;
+    cursor.visible = false; el('tooltip').hidden = true;
     el('stop').hidden = !value; updateUi();
   };
   const gpuExtension = gl.getExtension('WEBGL_debug_renderer_info');
@@ -249,7 +332,7 @@ async function startGarden() {
   const runBenchmark = async (signal: AbortSignal) => {
     bloomInput.checked = true; bloom.enabled = true; lightsInput.checked = true;
     bloom.strength = 0.65; el<HTMLInputElement>('glow').value = '0.65'; el('glow-value').textContent = '0.65';
-    benchmarkReport = { capturedAt: new Date().toISOString(), userAgent: navigator.userAgent, gpu, viewport: { width: canvas.clientWidth, height: canvas.clientHeight }, pixelRatio: renderer.getPixelRatio(), bloom: true, lightsPerPlant: 1, growthSeconds: GROWTH_SECONDS, targetFps: 60, sampleSeconds: 8, warmupSeconds: 10, results: [] };
+    benchmarkReport = { version: '0.2.0-alpha', capturedAt: new Date().toISOString(), userAgent: navigator.userAgent, gpu, viewport: { width: canvas.clientWidth, height: canvas.clientHeight }, pixelRatio: renderer.getPixelRatio(), bloom: true, bloomControl: 0.65, effectiveBloomStrength: 0.65 * (1 - Number(daylightInput.value) * 0.7), lightsPerPlant: 1, windStrength: Number(windInput.value), daylight: Number(daylightInput.value), growthSeconds: GROWTH_SECONDS, targetFps: 60, sampleSeconds: 8, warmupSeconds: 10, results: [] };
     el<HTMLButtonElement>('download').disabled = true; renderResults();
     for (const count of [1, 3, 5]) {
       clearGarden();
@@ -271,7 +354,7 @@ async function startGarden() {
     return benchmarkReport;
   };
   el('benchmark').onclick = async () => {
-    if (busy) return;
+    if (busy || phase !== 'active') return;
     cancelRun = new AbortController(); setBusy(true);
     try { await runBenchmark(cancelRun.signal); }
     catch (error) { el('benchmark-status').textContent = error instanceof DOMException && error.name === 'AbortError' ? 'Test stopped. Run again to collect a complete result.' : String(error); }
@@ -289,7 +372,7 @@ async function startGarden() {
     lastTime = performance.now(); recentFrames = [];
   });
   const chapters = [
-    { at: 0, title: 'A garden grown from rules.', text: 'LuminaGarden · Kartik Patel & Safa Akbar. The Assignment 3 vertical slice: seeded plant geometry, staged growth, emissive materials, colored lights, and bloom.' },
+    { at: 0, title: 'A garden grown from rules.', text: 'LuminaGarden · Kartik Patel & Safa Akbar. Alpha 04: a complete garden loop with seeded geometry, growth, connected wind animation, day/night, and glow.' },
     { at: 10, title: '01 / A seed takes root.', text: 'One seed becomes a sprout. Fourteen stem segments extend from their bases in sequence; the whole plant is never scaled as a single object.' },
     { at: 20, title: 'Branches first. Leaves next.', text: 'Branch angles follow a golden-angle distribution. Length, height, branch count, leaf placement, and color vary inside constrained ranges.' },
     { at: 30, title: '02 / Same rules, different seeds.', text: 'A second seed produces a different height, structure, and hue. Entering the same seed again reproduces the same geometry.' },
@@ -300,10 +383,10 @@ async function startGarden() {
     { at: 77, title: '04 / Measure the real scene.', text: 'The stress test compares one, three, and five plants. Bloom stays enabled and each plant has its own point light. The maximum is five plants.' },
     { at: 96, title: 'One → three → five plants.', text: 'Each level gets ten seconds for growth and shader warm-up, followed by eight seconds of measured animation frames. The live lab shows the actual results.' },
     { at: 115, title: 'Five plants. Five colored lights.', text: 'This is the requested workload limit. Frame time and draw calls expose the cost of bloom and additional lights. Results are specific to this GPU and viewport.' },
-    { at: 138, title: 'The vertical slice, end to end.', text: 'Click-to-plant, repeatable procedural variation, staged growth, GLSL emission, colored point lights, and bloom are implemented. Wind, movable lights, species, and shadows remain for the final.' },
+    { at: 138, title: 'A complete garden experience.', text: 'The alpha adds a start menu, completion/restart loop, shared wind deformation, and day/night controls. Movable-light bending, more species, and shadows remain for the final.' },
   ];
   const runTour = async () => {
-    if (busy) return;
+    if (busy || phase !== 'active') return;
     cancelRun = new AbortController(); const signal = cancelRun.signal;
     setBusy(true); home(); clearGarden(); document.body.classList.add('demo-mode');
     el<HTMLDetailsElement>('lab').open = true;
@@ -330,17 +413,19 @@ async function startGarden() {
   const animate = (now: number) => {
     const frameMs = now - lastTime; lastTime = now;
     if (!document.hidden) {
-      elapsed += frameMs / 1000;
+      if (phase === 'active') elapsed += frameMs / 1000;
       if (frameMs > 0) { recentFrames.push(frameMs); if (recentFrames.length > 120) recentFrames.shift(); benchmarkSamples?.push(frameMs); }
     }
-    plants.forEach(p => p.update(elapsed, lightsInput.checked, GROWTH_SECONDS));
+    const daylight = Number(daylightInput.value);
+    plants.forEach(p => p.update(elapsed, lightsInput.checked, GROWTH_SECONDS, Number(windInput.value), daylight));
+    bloom.strength = Number(el<HTMLInputElement>('glow').value) * (1 - daylight * 0.7);
     controls.update(); renderer.info.reset(); composer.render();
     lastCalls = renderer.info.render.calls; lastTriangles = renderer.info.render.triangles;
     if (tourStart !== null) {
       const seconds = (now - tourStart) / 1000;
       const index = chapters.findLastIndex(c => c.at <= seconds);
       if (index !== tourIndex) {
-        tourIndex = index; el('demo-chapter').textContent = `LUMINA GARDEN / ASSIGNMENT 03 · ${String(index + 1).padStart(2, '0')} / ${chapters.length}`;
+        tourIndex = index; el('demo-chapter').textContent = `LUMINA GARDEN / ALPHA 04 · ${String(index + 1).padStart(2, '0')} / ${chapters.length}`;
         el('demo-title').textContent = chapters[index].title; el('demo-text').textContent = chapters[index].text;
       }
       el('demo-progress').style.width = `${Math.min(100, seconds / 150 * 100)}%`;
@@ -348,12 +433,20 @@ async function startGarden() {
     if (now - lastUi > 250) { updateUi(); lastUi = now; }
     requestAnimationFrame(animate);
   };
-  for (let i = 0; i < 3; i++) addPlant(new THREE.Vector3(...GARDEN_POSITIONS[i]), String(2026 + i), true);
   requestAnimationFrame(animate);
   el('loading').remove(); updateUi();
+  el<HTMLButtonElement>('start-garden').disabled = false;
+  el('start-garden').textContent = 'Start garden ↗';
   // Read-only diagnostics for smoke tests and captured evidence; no external service.
   Object.defineProperty(window, '__lumina', { value: {
     get plantCount() { return plants.length; },
+    get phase() { return phase; },
+    get windStrength() { return Number(windInput.value); },
+    get daylight() { return Number(daylightInput.value); },
+    get elapsed() { return elapsed; },
+    get lightPositions() { return plants.map(p => p.light.position.toArray()); },
+    get geometryCount() { return renderer.info.memory.geometries; },
+    get shaderPrograms() { return renderer.info.programs?.length; },
     get growingCount() { return plants.filter(p => p.progress < 1).length; },
     get seeds() { return plants.map(p => p.blueprint.seed); },
     get benchmark() { return benchmarkReport; },
@@ -371,6 +464,9 @@ startGarden().catch(error => {
   el('loading').innerHTML = `<strong>The garden couldn’t start.</strong><p></p>`;
   el('loading').querySelector('p')!.textContent = error instanceof Error ? error.message : String(error);
   plantButton.disabled = true;
+  el('start-error').hidden = false;
+  el('start-error').textContent = error instanceof Error ? error.message : String(error);
+  el('start-garden').textContent = 'WebGL2 required';
   for (const id of ['benchmark', 'tour', 'clear', 'camera-home']) el<HTMLButtonElement>(id).disabled = true;
   console.error(error);
 });

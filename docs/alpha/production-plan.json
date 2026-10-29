@@ -1,0 +1,43 @@
+{
+  "calendar_status": "Calendar planned against a tentative December 14, 2026 submission date supplied by the team. Alpha checkpoint: October 29–November 1. Weekly plan: November 2–December 13. Confirm the official deadline if it changes; preserve the final buffer week.",
+  "proposed_ownership": "Kartik: procedural geometry, wind shaders, and profiling. Safa: UI/environment controls, asset review, and documentation. Both: integration, visual review, and regression testing.",
+  "weeks": [
+    {
+      "week": "1 / Nov 2–8",
+      "engineering": "Stabilize the alpha loop and environment controls; profile on a second desktop GPU/browser; prototype basic shadows within budget.",
+      "assets": "Review existing soil, leaves, vein emission, and day/night palettes; correct readability and repetition defects.",
+      "integration": "Retest start, growth, wind, lighting, finish, and restart together. Keep or defer shadows based on measured visual benefit and FPS."
+    },
+    {
+      "week": "2 / Nov 9–15",
+      "engineering": "Add a bounded movable light and controlled bending toward it; combine its deformation with wind without detaching organs.",
+      "assets": "Create a small procedural light marker; tune color/range presets and check plant/light readability.",
+      "integration": "Test simultaneous growth, wind, and light movement. Acceptance: repeatable seeds and five-plant limits still hold; lighting stays coherent."
+    },
+    {
+      "week": "3 / Nov 16–22",
+      "engineering": "Add constrained Crystal Bloom, Spiral Vine, and Glowing Tree rule presets; connect a species selector to seed generation.",
+      "assets": "Build species-specific procedural leaves/petals and silhouettes; review palettes and record any new asset provenance.",
+      "integration": "Run every family through the same growth/wind/render pipeline. Test bounds, five-plant mixed gardens, and reset cleanup."
+    },
+    {
+      "week": "4 / Nov 23–29",
+      "engineering": "Integrate species, wind, movable lighting, and shadows retained after profiling; exercise mixed five-plant gardens and long sessions.",
+      "assets": "Resolve inconsistent silhouettes, materials, light markers, and UI labels across species; audit asset provenance.",
+      "integration": "Produce a cross-feature test build. Acceptance: each family grows and sways coherently; no scene/light accumulation after repeated restart."
+    },
+    {
+      "week": "5 / Nov 30–Dec 6",
+      "engineering": "Complete cross-feature integration and performance pass; resolve high-priority defects; freeze feature scope at the end of this week.",
+      "assets": "Finalize existing textures, palettes, and silhouettes; verify attribution and the consistency of all UI states.",
+      "integration": "Publish a release candidate on Vercel and test two desktop browsers. Feature freeze December 6; defer unstable optional work before the freeze."
+    },
+    {
+      "week": "6 / Dec 7–13",
+      "engineering": "Bug fixes and regression checks only. Correct crashes, interaction defects, and performance regressions; no new features.",
+      "assets": "Polish existing asset/UI defects only; prepare final screenshots and documentation. No new feature assets.",
+      "integration": "Finalize README, PDF/release notes, and presentation/demo materials; verify hosted URL and restart flow. Submit on tentative December 14. No new features."
+    }
+  ],
+  "target_submission": "2026-12-14 (tentative)"
+}

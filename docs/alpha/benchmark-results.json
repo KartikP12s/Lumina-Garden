@@ -1,0 +1,53 @@
+{
+  "version": "0.2.0-alpha",
+  "capturedAt": "2026-10-29T16:06:15.842Z",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36",
+  "gpu": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)",
+  "viewport": {
+    "width": 1086,
+    "height": 594
+  },
+  "pixelRatio": 1,
+  "bloom": true,
+  "bloomControl": 0.65,
+  "effectiveBloomStrength": 0.58175,
+  "lightsPerPlant": 1,
+  "windStrength": 0.7,
+  "daylight": 0.15,
+  "growthSeconds": 9,
+  "targetFps": 60,
+  "sampleSeconds": 8,
+  "warmupSeconds": 10,
+  "results": [
+    {
+      "plants": 1,
+      "averageFps": 59.50301881143657,
+      "p95FrameMs": 16.799999999999272,
+      "minFps": 11.990407673861226,
+      "drawCalls": 23,
+      "triangles": 6906,
+      "frames": 477,
+      "measuredSeconds": 8.016399999999997
+    },
+    {
+      "plants": 3,
+      "averageFps": 60.003000150007516,
+      "p95FrameMs": 16.700000000004366,
+      "minFps": 59.523809523799216,
+      "drawCalls": 33,
+      "triangles": 13002,
+      "frames": 480,
+      "measuredSeconds": 7.999599999999998
+    },
+    {
+      "plants": 5,
+      "averageFps": 60.003000150007516,
+      "p95FrameMs": 16.700000000004366,
+      "minFps": 59.523809523799216,
+      "drawCalls": 43,
+      "triangles": 19286,
+      "frames": 480,
+      "measuredSeconds": 7.999599999999998
+    }
+  ]
+}

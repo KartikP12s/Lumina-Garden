@@ -34,8 +34,9 @@ try {
   page.on('console', message => { if (message.type() === 'error') errors.push(message.text()); });
   await page.goto(baseURL, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => Boolean(window.__lumina));
+  await page.locator('#start-garden').click();
   await page.waitForTimeout(2000);
-  await page.screenshot({ path: 'docs/garden-preview.png', fullPage: true });
+  await page.screenshot({ path: 'docs/alpha/recording-preview.png', fullPage: true });
   console.log('Garden loaded; capturing a real click and nine-second growth.');
   await page.locator('#clear').click();
   await page.locator('#seed').fill('2026');
@@ -58,13 +59,13 @@ try {
   await page.waitForFunction(() => !window.__lumina.busy, { timeout: 10000 });
   const report = await page.evaluate(() => window.__lumina.benchmark);
   if (!report || report.results.length !== 3) throw new Error('Incomplete benchmark');
-  await writeFile('docs/benchmark-results.json', JSON.stringify(report, null, 2) + '\n');
+  await writeFile('docs/alpha/benchmark-results.json', JSON.stringify(report, null, 2) + '\n');
   await writeFile(path.join(output, 'browser-errors.json'), JSON.stringify(errors, null, 2) + '\n');
   const video = page.video();
   await context.close(); context = undefined;
   const recorded = await video.path();
   await rename(recorded, path.join(output, 'LuminaGarden-Assignment3-Demo.webm'));
-  console.log('Saved artifacts/LuminaGarden-Assignment3-Demo.webm and docs/benchmark-results.json');
+  console.log('Saved artifacts/LuminaGarden-Assignment3-Demo.webm and docs/alpha/benchmark-results.json');
   console.log(JSON.stringify(report.results, null, 2));
   if (errors.length) throw new Error(`Browser errors were recorded: ${errors.join('; ')}`);
 } finally {
