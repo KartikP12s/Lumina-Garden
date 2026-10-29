@@ -4,7 +4,7 @@
 
 Kartik | 0:00-0:25 (25 seconds).
 
-LuminaGarden is a small interactive garden built with Three.js and TypeScript. Our three pillars are procedural generation, animation, and rendering. The alpha now has a complete loop: start, plant and shape the garden, finish, and restart. We'll focus on two challenges: coherent plant animation and the cost of glow.
+LuminaGarden is a small interactive garden built with Three.js and TypeScript. Our three pillars are procedural generation, animation, and rendering. We have created a new version with a complete loop: start, plant and shape the garden, finish, and restart. Also, we have added the wind and day/night effect on the enviornment. For this moment, however, we'll focus on two challenges: coherent plant animation and the cost of glow.
 
 Point briefly at the loop; keep the overview short.
 
@@ -14,11 +14,11 @@ Point briefly at the loop; keep the overview short.
 
 Kartik | 0:25-1:45 (80 seconds).
 
-Our first challenge is making generated plants feel structured while they grow. Unconstrained random branches can look disconnected or implausible, while scaling a complete model makes every part appear at once. We generate a deterministic blueprint from the seed, with bounded height, five to eight branches, and three to five leaves per branch. Branch placement follows a golden-angle distribution.
+Our first challenge is making procedural plants grow in a believable order. Random branching can look incoherent, and scaling a complete model reveals everything at once. We use a seeded blueprint with bounded dimensions and staggered growth.
 
-The blueprint gives each segment and organ a start and end time. A clamped smoothstep turns overall growth progress into a local reveal amount. Fourteen trunk segments extend from their bases, then branches, leaves, and petals appear.
+The equation converts the whole plant's progress into a growth amount for each part. Progress runs from zero to one, while start and end set that part's growth window. Subtracting start and dividing by end minus start puts us on the part's own timeline. Clamp keeps the value between zero and one. Smoothstep makes growth start and finish gently, and g is the final reveal amount. For example, a leaf scheduled between 60% and 80% is halfway revealed at 70%.
 
-These are screenshots from the actual nine-second growth sequence. The same seed recreates the same blueprint, and generator tests check finite, bounded geometry across 300 seeds. The tradeoff is artistic control rather than botanical realism; the rules do not prevent every leaf intersection.
+That amount extends each stem segment from its base or reveals a leaf or petal. These screenshots show the nine-second sequence. The same seed recreates the same blueprint; tests check 300 seeds. The rules do not prevent every leaf intersection.
 
 Point along the stage images, then hand over to Safa.
 
